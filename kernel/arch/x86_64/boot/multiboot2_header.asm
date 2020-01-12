@@ -1,3 +1,12 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;  This file is part of the Poseidon Kernel, and is made available under
+;;  the terms of the MIT License.
+;;
+;;  Copyright (C) 2020 - The Poseidon Authors
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 section .multiboot2_header
 
 ; Multiboot 2 compliant header
