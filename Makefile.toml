@@ -1,0 +1,38 @@
+################################################################################
+##
+##  This file is part of the Poseidon Kernel, and is made available under
+##  the terms of the MIT License.
+##
+##  Copyright (C) 2020 - The Poseidon Authors
+##
+################################################################################
+
+[env]
+ARCH = { value = "x86_64", condition = { env_not_set = ["ARCH"] } }
+BUILD_DIR = { value = "./build", condition = { env_not_set = ["BUILD_DIR"] } }
+
+[tasks.clean]
+command = "rm"
+args = ["-rf", "${BUILD_DIR}"]
+
+[tasks.boot]
+command = "bash"
+args = ["./scripts/${ARCH}/build.sh"]
+
+[tasks.kernel]
+dependencies = ["boot"]
+script = [
+'''
+ld --nmagic -T kernel/arch/${ARCH}/poseidon.ld ${BUILD_DIR}/boot/*.o -o ${BUILD_DIR}/poseidon
+'''
+]
+
+[tasks.iso]
+dependencies = ["kernel"]
+command = "bash"
+args = ["./scripts/gen-iso.sh", "-o", "${BUILD_DIR}/poseidon.iso", "${BUILD_DIR}/poseidon"]
+
+[tasks.qemu]
+dependencies = ["iso"]
+command = "qemu-system-${ARCH}"
+args = ["-cdrom", "${BUILD_DIR}/poseidon.iso"]
