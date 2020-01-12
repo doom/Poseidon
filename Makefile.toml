@@ -7,13 +7,8 @@ command = "rm"
 args = ["-rf", "${BUILD_DIR}"]
 
 [tasks.boot]
-script = [
-'''
-mkdir -p ${BUILD_DIR}/boot
-nasm -f elf64 kernel/arch/${ARCH}/boot/multiboot_header.asm -o ${BUILD_DIR}/boot/multiboot_header.o
-nasm -f elf64 kernel/arch/${ARCH}/boot/boot.asm -o ${BUILD_DIR}/boot/boot.o
-'''
-]
+command = "bash"
+args = ["./scripts/${ARCH}/build.sh"]
 
 [tasks.kernel]
 dependencies = ["boot"]
