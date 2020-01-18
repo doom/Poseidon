@@ -19,11 +19,27 @@ SECTIONS
     .boot :
     {
         /* ensure that the multiboot header is at the beginning */
-        KEEP(*(.multiboot2_header))
+        KEEP(*(.multiboot2_header));
     }
 
-    .text :
+    .text ALIGN(4K) :
     {
-        *(.text)
+        *(.text);
+    }
+
+    .rodata ALIGN(4K) :
+    {
+        *(.rodata);
+    }
+
+    .data ALIGN(4K) :
+    {
+        *(.data);
+    }
+
+    .bss ALIGN(4K) :
+    {
+        *(COMMON);
+        *(.bss);
     }
 }
