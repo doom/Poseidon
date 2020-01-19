@@ -56,6 +56,9 @@ start:
     jmp boot_gdt64.kernel_code:start64
 
 bits 64
+
+extern main
+
 start64:
 
     ;; Reload all data segment registers with the new 64-bit data segment selector
@@ -72,8 +75,8 @@ start64:
     mov rcx, 500
     rep stosq
 
-    ;; Write 'OK'
-    mov dword [0xB8000], 0x024b024f
+    ;; Call Rust
+    call main
     hlt
 
 bits 32
