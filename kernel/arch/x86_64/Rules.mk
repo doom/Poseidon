@@ -8,16 +8,9 @@
 ################################################################################
 
 
-SRCS = $(wildcard boot/*.asm)
-OBJS = $(addprefix $(TARGET_DIRECTORY)/, $(SRCS:%.asm=%.o))
+ARCH_SRCS := $(wildcard kernel/arch/$(ARCH)/boot/*.asm)
+ARCH_OBJECTS := $(addprefix $(TARGET_DIRECTORY)/, $(ARCH_SRCS:kernel/arch/$(ARCH)/%.asm=%.o))
 
-all: $(OBJS)
-
-$(TARGET_DIRECTORY)/boot/%.o:	boot/%.asm
+$(TARGET_DIRECTORY)/boot/%.o:	kernel/arch/$(ARCH)/boot/%.asm
 		@mkdir -p "$(TARGET_DIRECTORY)/boot"
 		nasm -f elf64 $< -o $@
-
-clean:
-		$(RM) $(OBJS)
-
-.PHONY:	all clean

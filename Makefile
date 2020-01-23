@@ -9,43 +9,47 @@
 
 ARCH ?= x86_64
 
-# The current profile
-export PROFILE ?= debug
+# Current profile
+PROFILE ?= debug
 
-# Build directory, exported for recursive make invocations
-export TARGET_DIRECTORY := $(shell pwd)/build
+# Build directory
+TARGET_DIRECTORY := $(shell pwd)/build
 
-BIN := $(TARGET_DIRECTORY)/poseidon.bin
+BIN := $(TARGET_DIRECTORY)/poseidon.elf
 ISO := $(TARGET_DIRECTORY)/poseidon.iso
 TARGET_TRIPLE := $(ARCH)-unknown-none
-KERNEL := $(TARGET_DIRECTORY)/kernel/x86_64-unknown-none/debug/libkernel.a
+KERNEL := $(TARGET_DIRECTORY)/kernel/$(TARGET_TRIPLE)/$(PROFILE)/libkernel.a
 
-# Do not print "Entering directory ..."
-MAKEFLAGS	+=	--no-print-directory
+CARGO_FLAGS := --target kernel/targets/$(TARGET_TRIPLE).json
+LDFLAGS := --nmagic
 
-all:	$(BIN)
+ifeq ($(PROFILE),release)
+CARGO_FLAGS += --release
+endif
 
-$(BIN): $(ARCH) kernel
-		ld --nmagic -T kernel/arch/$(ARCH)/poseidon.ld $(TARGET_DIRECTORY)/boot/*.o $(KERNEL) -o $(BIN)
+include kernel/arch/$(ARCH)/Rules.mk
 
-$(ARCH):
-		$(MAKE) -C kernel/arch/$(ARCH)
+all:		$(ARCH_OBJECTS)
+			cargo xbuild --manifest-path kernel/Cargo.toml --target-dir $(TARGET_DIRECTORY)/kernel $(CARGO_FLAGS)
+			ld $(LDFLAGS) -T kernel/arch/$(ARCH)/poseidon.ld $(ARCH_OBJECTS) $(KERNEL) -o $(BIN)
 
-kernel:
-		cargo xbuild --manifest-path kernel/Cargo.toml --target-dir $(TARGET_DIRECTORY)/kernel --target kernel/targets/$(TARGET_TRIPLE).json
+$(ISO):		all
+			./scripts/gen-iso.sh -o $(ISO) $(BIN)
 
-$(ISO):	all
-		./scripts/gen-iso.sh -o $(ISO) $(BIN)
+iso:		$(ISO)
 
-iso:	$(ISO)
+qemu:		iso
+			qemu-system-$(ARCH) -cdrom $(TARGET_DIRECTORY)/poseidon.iso -m 512M
 
-qemu:	iso
-		qemu-system-$(ARCH) -cdrom $(TARGET_DIRECTORY)/poseidon.iso
+qemu-kvm:	iso
+			qemu-system-$(ARCH) -cdrom $(TARGET_DIRECTORY)/poseidon.iso -m 512M --enable-kvm
 
 clean:
-		$(RM) -r $(TARGET_DIRECTORY)
-		$(RM) -r kernel/xbuild/
+			$(RM) -r $(TARGET_DIRECTORY)
 
-re:		clean all
+fclean:		clean
+			$(RM) -r kernel/xbuild/
 
-.PHONY: kernel all clean re iso qemu
+re:			clean all
+
+.PHONY: 	all clean fclean re iso qemu qemu-kvm

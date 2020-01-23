@@ -2,7 +2,7 @@
 
 ## Build Dependencies
 - cargo
-- cargo-make
+- make
 - nasm
 - ld
 
